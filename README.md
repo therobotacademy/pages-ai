@@ -5,7 +5,7 @@
 
 Repositorio principal de publicaciones públicas sobre **Inteligencia Artificial** y **Data Science** por The Robot Academy.
 
-🔗 **[Ver publicaciones → therobotacademy.github.io](https://therobotacademy.github.io/)**
+🔗 **[Ver publicaciones → therobotacademy.github.io](https://therobotacademy.github.io/pages-ai/)**
 
 ---
 
@@ -13,7 +13,8 @@ Repositorio principal de publicaciones públicas sobre **Inteligencia Artificial
 
 | # | Título | Tipo | Nivel | Duración |
 |---|--------|------|-------|----------|
-| 1 | [Introducción a Google ADK con Python](docs/adk-intro.html) | Codelab | Intermedio | 45 min |
+| 1 | [Introducción a Google ADK con Python](https://therobotacademy.github.io/pages-ai/adk-intro.html) | Codelab | Intermedio | 45 min |
+| 2 | [Visualización de Datos con Plotly](https://therobotacademy.github.io/pages-ai/plotly-intro.html) | Teoría  | Inicial    | 30 min |
 
 ---
 
@@ -23,7 +24,8 @@ Repositorio principal de publicaciones públicas sobre **Inteligencia Artificial
 therobotacademy.github.io/
 ├── docs/           # Páginas publicadas
     ├── index.html          # Página principal con listado de publicaciones
-│   └── adk-intro.html  # Introducción a Google Agent Development Kit
+│   └── adk-intro.html      # Introducción a Google Agent Development Kit
+│   └── plotly-intro.html   #Introducción a la librería de visualización de datos Plotly
 └── README.md
 ```
 

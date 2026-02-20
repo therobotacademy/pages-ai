@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 Introducción a Plotly</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+/* ── Reset & Variables ──────────────────────────────────────────────── */
+:root {
+  --bg: #f0ede4;
+  --bg-dark: #e0dbd0;
+  --surface: #faf8f4;
+  --ink: #2d3a2d;
+  --muted: #5a6b5a;
+  --accent: #b85c38;
+  --accent-glow: #d4734f;
+  --teal: #3a7a5a;
+  --code-bg: #1a2e1a;
+  --code-text: #d0dac0;
+  --heading-font: 'Libre Baskerville', Georgia, serif;
+  --body-font: 'Lato', system-ui, sans-serif;
+  --code-font: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body-font);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+/* ── Progress bar ───────────────────────────────────────────────────── */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+  z-index: 1000;
+  transition: width 0.15s ease-out;
+  width: 0%;
+}
+
+/* ── Navigation dots ────────────────────────────────────────────────── */
+.nav-dots {
+  position: fixed;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  z-index: 100;
+}
+
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.3;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  padding: 0;
+}
+
+.nav-dot:hover {
+  opacity: 0.7;
+  transform: scale(1.4);
+}
+
+.nav-dot.active {
+  opacity: 1;
+  background: var(--accent);
+  transform: scale(1.3);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+@media (max-width: 768px) {
+  .nav-dots { display: none; }
+}
+
+/* ── Sections ───────────────────────────────────────────────────────── */
+.section {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 5rem 2rem;
+}
+
+.section-inner {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.section-inner.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-divider {
+  max-width: 820px;
+  margin: 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--bg-dark),
+    var(--muted),
+    var(--bg-dark),
+    transparent
+  );
+  opacity: 0.5;
+}
+
+/* ── Hero section ───────────────────────────────────────────────────── */
+.hero-section {
+  padding: 8rem 2rem 5rem;
+  text-align: center;
+}
+
+.hero-section h1 {
+  font-size: clamp(2.8rem, 7vw, 5rem) !important;
+  text-align: center;
+  margin-bottom: 0.5rem !important;
+}
+
+.hero-section h2 {
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem) !important;
+  color: var(--muted) !important;
+  font-weight: 300 !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-bottom: 0 !important;
+  text-align: center;
+}
+
+/* ── Typography ─────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading-font);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+h1 em, h2 em, h3 em {
+  color: var(--accent);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  margin-top: 2.5rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--bg-dark);
+}
+
+h3 {
+  font-size: 1.3rem;
+  margin-top: 2rem;
+  margin-bottom: 0.8rem;
+  color: var(--accent);
+}
+
+p {
+  margin-bottom: 1.2rem;
+  color: var(--ink);
+  max-width: 65ch;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+em {
+  font-style: italic;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--accent-glow);
+}
+
+/* ── Lists ──────────────────────────────────────────────────────────── */
+ul, ol {
+  margin: 1rem 0 1.5rem 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+  color: var(--ink);
+}
+
+li::marker {
+  color: var(--accent);
+}
+
+/* ── Blockquotes ────────────────────────────────────────────────────── */
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  background: var(--surface);
+  border-radius: 0 10px 10px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+blockquote p {
+  margin-bottom: 0.5rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+blockquote strong {
+  color: var(--accent);
+  font-style: normal;
+}
+
+/* ── Code blocks ────────────────────────────────────────────────────── */
+pre {
+  background: var(--code-bg) !important;
+  border-radius: 12px;
+  padding: 1.5rem !important;
+  margin: 1.5rem 0 !important;
+  overflow-x: auto;
+  border: 1px solid rgba(128,128,128,0.1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  position: relative;
+}
+
+pre code {
+  font-family: var(--code-font) !important;
+  font-size: 0.85rem !important;
+  line-height: 1.7 !important;
+  color: var(--code-text) !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+code {
+  font-family: var(--code-font);
+  font-size: 0.88em;
+  background: var(--bg-dark);
+  color: var(--accent);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+  background: var(--surface);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+thead {
+  background: var(--code-bg);
+  color: var(--code-text);
+}
+
+th {
+  padding: 0.9rem 1.2rem;
+  text-align: left;
+  font-family: var(--code-font);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+td {
+  padding: 0.8rem 1.2rem;
+  border-top: 1px solid var(--bg-dark);
+}
+
+tr:hover td {
+  background: var(--bg);
+}
+
+/* ── LaTeX / Math ───────────────────────────────────────────────────── */
+.math-display {
+  margin: 2rem 0;
+  text-align: center;
+  overflow-x: auto;
+  padding: 1.5rem;
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--bg-dark);
+}
+
+.math-inline {
+  margin: 0 0.15em;
+}
+
+.katex { font-size: 1.1em; }
+.math-display .katex { font-size: 1.3em; }
+
+/* ── Images & Figures ───────────────────────────────────────────────── */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+img:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+/* Figure container — all images go through <figure> */
+figure.figure-img {
+  margin: 2rem auto;
+  text-align: center;
+  max-width: 100%;
+}
+
+figure.figure-img img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+/* Alignment modifiers */
+figure.figure-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+figure.figure-left {
+  float: left;
+  margin: 0.5rem 2rem 1.5rem 0;
+  max-width: 45%;
+}
+
+figure.figure-right {
+  float: right;
+  margin: 0.5rem 0 1.5rem 2rem;
+  max-width: 45%;
+}
+
+/* Size presets */
+figure.figure-small { max-width: 40%; }
+figure.figure-medium { max-width: 60%; }
+figure.figure-large { max-width: 80%; }
+figure.figure-full { max-width: 100%; }
+
+/* Banner: full width, no radius, edge-to-edge feel */
+figure.figure-banner {
+  max-width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  text-align: center;
+}
+
+figure.figure-banner img {
+  border-radius: 0;
+  width: 100%;
+  box-shadow: none;
+}
+
+/* Caption styling */
+figcaption {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.75rem;
+  font-style: italic;
+  line-height: 1.5;
+  padding: 0 1rem;
+}
+
+/* Clear floats after left/right images */
+figure.figure-left + *,
+figure.figure-right + * {
+  clear: none;
+}
+
+section::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+/* Responsive: collapse float layouts on mobile */
+@media (max-width: 600px) {
+  figure.figure-left,
+  figure.figure-right {
+    float: none;
+    max-width: 100%;
+    margin: 1.5rem auto;
+  }
+  figure.figure-small { max-width: 80%; }
+}
+
+/* ── Horizontal rules (within sections) ────────────────────────────── */
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--bg-dark), transparent);
+  margin: 2.5rem 0;
+}
+
+/* ── Background texture ─────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 15% 50%, color-mix(in srgb, var(--teal) 6%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 25%, color-mix(in srgb, var(--accent) 4%, transparent) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ── Scroll indicator at top ────────────────────────────────────────── */
+.scroll-start {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--code-font);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  animation: bob 2s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+  50% { opacity: 1; transform: translateX(-50%) translateY(5px); }
+}
+
+/* ── Print styles ───────────────────────────────────────────────────── */
+@media print {
+  .progress-bar, .nav-dots, .scroll-start { display: none; }
+  .section-inner { opacity: 1 !important; transform: none !important; }
+  .section { padding: 2rem 0; break-inside: avoid; }
+  body::before { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav class="nav-dots" id="navDots"></nav>
+
+<section class="section hero-section" data-section="0">
+  <div class="section-inner">
+<h1>📊 Introducción a Plotly</h1>
+<h2><strong>Visualización interactiva para análisis de datos</strong></h2>
+<p><strong>Qué es Plotly, cómo está estructurada y cómo utilizarla</strong></p>
+<figure class="figure-img">
+  <img src="https://miro.medium.com/v2/resize%3Afit%3A1400/1%2AjqG98mxfYyivFuYMuxjzcA.gif" alt="Image" loading="lazy">
+  <figcaption>Image</figcaption>
+</figure>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="1">
+  <div class="section-inner">
+<h2>1️⃣ ¿Qué es Plotly?</h2>
+<figure class="figure-img">
+  <img src="https://us1.discourse-cdn.com/flex024/uploads/plot/original/2X/0/077d2a4b13883a347058643d11598def8def4b80.png" alt="Image" loading="lazy">
+  <figcaption>Image</figcaption>
+</figure>
+<p>Plotly es una librería de visualización interactiva para Python que permite:</p>
+<ul>
+<li>Zoom dinámico</li>
+<li>Hover con información contextual</li>
+<li>Activar/desactivar series desde la leyenda</li>
+<li>Exportar gráficos a HTML interactivo</li>
+<li>Construir dashboards</li>
+</ul>
+<p>A diferencia de <strong>Matplotlib</strong> y  <strong>Seaborn</strong>, que generan gráficos estáticos por defecto, Plotly está diseñado para la  <strong>exploración interactiva de datos</strong>.</p>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="2">
+  <div class="section-inner">
+<h2>2️⃣ Filosofía de diseño</h2>
+<p>Plotly sigue una arquitectura en  <strong>dos niveles principales</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Nivel</th>
+<th>Librería</th>
+<th>Cuándo usarla</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alto nivel</td>
+<td><code class="highlight">plotly.express</code></td>
+<td>Análisis rápido, EDA, gráficos directos</td>
+</tr>
+<tr>
+<td>Bajo nivel</td>
+<td><code class="highlight">plotly.graph_objects</code></td>
+<td>Control fino, dashboards, subplots complejos</td>
+</tr>
+</tbody>
+</table>
+<figure class="figure-img">
+  <img src="https://us1.discourse-cdn.com/flex024/uploads/plot/original/2X/4/43d7517d596cc6208f16c4cca4a1e4b9aaf5ac72.png" alt="Image" loading="lazy">
+  <figcaption>Image</figcaption>
+</figure>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="3">
+  <div class="section-inner">
+<h2>3️⃣ Plotly Express (px)</h2>
+<p>Es la forma <strong>más sencilla y productiva</strong> de trabajar.</p>
+<h3>Características clave</h3>
+<ul>
+<li>Sintaxis compacta</li>
+<li>Trabaja naturalmente con <strong>DataFrames</strong></li>
+<li>Sigue el principio de <em>tidy data</em> (datos en formato largo)</li>
+<li>Permite color, tamaño, facetas y animación con un solo argumento</li>
+</ul>
+<h3>Ejemplo conceptual</h3>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF4689">import</span><span style="color: #F8F8F2"> plotly.express </span><span style="color: #66D9EF">as</span><span style="color: #F8F8F2"> px</span>
+<span style="color: #FF4689">import</span><span style="color: #F8F8F2"> pandas </span><span style="color: #66D9EF">as</span><span style="color: #F8F8F2"> pd</span>
+
+<span style="color: #F8F8F2">df</span> <span style="color: #FF4689">=</span> <span style="color: #F8F8F2">px</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">data</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">iris()</span>
+
+<span style="color: #F8F8F2">fig</span> <span style="color: #FF4689">=</span> <span style="color: #F8F8F2">px</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">scatter(</span>
+    <span style="color: #F8F8F2">df,</span>
+    <span style="color: #F8F8F2">x</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;sepal_width&quot;</span><span style="color: #F8F8F2">,</span>
+    <span style="color: #F8F8F2">y</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;sepal_length&quot;</span><span style="color: #F8F8F2">,</span>
+    <span style="color: #F8F8F2">color</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;species&quot;</span><span style="color: #F8F8F2">,</span>
+    <span style="color: #F8F8F2">title</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;Scatter interactivo con Plotly Express&quot;</span>
+<span style="color: #F8F8F2">)</span>
+
+<span style="color: #F8F8F2">fig</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">show()</span>
+</code></pre></div>
+<h3>Idea importante</h3>
+<p>En <code class="highlight">px</code>, cada argumento suele mapear a una  <strong>columna del DataFrame</strong> .</p>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="4">
+  <div class="section-inner">
+<h2>4️⃣ Graph Objects (go)</h2>
+<p>Es el nivel bajo. Permite construir gráficos como si estuviéramos “ensamblando piezas”.</p>
+<h3>Conceptos clave</h3>
+<ul>
+<li><code class="highlight">Figure</code> → contenedor del gráfico</li>
+<li><code class="highlight">Trace</code> → cada serie de datos</li>
+<li><code class="highlight">Layout</code> → configuración visual</li>
+</ul>
+<h3>Ejemplo conceptual</h3>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #FF4689">import</span><span style="color: #F8F8F2"> plotly.graph_objects </span><span style="color: #66D9EF">as</span><span style="color: #F8F8F2"> go</span>
+
+<span style="color: #F8F8F2">fig</span> <span style="color: #FF4689">=</span> <span style="color: #F8F8F2">go</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">Figure()</span>
+
+<span style="color: #F8F8F2">fig</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">add_trace(go</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">Scatter(</span>
+    <span style="color: #F8F8F2">x</span><span style="color: #FF4689">=</span><span style="color: #F8F8F2">[</span><span style="color: #AE81FF">1</span><span style="color: #F8F8F2">,</span><span style="color: #AE81FF">2</span><span style="color: #F8F8F2">,</span><span style="color: #AE81FF">3</span><span style="color: #F8F8F2">],</span>
+    <span style="color: #F8F8F2">y</span><span style="color: #FF4689">=</span><span style="color: #F8F8F2">[</span><span style="color: #AE81FF">4</span><span style="color: #F8F8F2">,</span><span style="color: #AE81FF">1</span><span style="color: #F8F8F2">,</span><span style="color: #AE81FF">2</span><span style="color: #F8F8F2">],</span>
+    <span style="color: #F8F8F2">mode</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;lines&quot;</span><span style="color: #F8F8F2">,</span>
+    <span style="color: #F8F8F2">name</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;Serie 1&quot;</span>
+<span style="color: #F8F8F2">))</span>
+
+<span style="color: #F8F8F2">fig</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">update_layout(title</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;Ejemplo con Graph Objects&quot;</span><span style="color: #F8F8F2">)</span>
+
+<span style="color: #F8F8F2">fig</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">show()</span>
+</code></pre></div>
+<h3>Cuándo usarlo</h3>
+<ul>
+<li>Subplots personalizados</li>
+<li>Ejes múltiples</li>
+<li>Mezclar tipos (línea + barras + markers)</li>
+<li>Dropdowns y botones</li>
+</ul>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="5">
+  <div class="section-inner">
+<h2>5️⃣ La estructura interna de una figura</h2>
+<figure class="figure-img">
+  <img src="https://www.tutorialspoint.com/plotly/images/plotly_module.jpg" alt="Image" loading="lazy">
+  <figcaption>Image</figcaption>
+</figure>
+<p>Un gráfico Plotly se compone de:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code>Figure
+ ├── Data (Traces)
+ │     ├── Scatter
+ │     ├── Bar
+ │     └── Box
+ └── Layout
+       ├── title
+       ├── xaxis
+       ├── yaxis
+       └── template
+</code></pre></div>
+<p>Esto significa que  <strong>todo gráfico es un objeto modificable dinámicamente</strong> .</p>
+<p>Podemos actualizar cualquier parte:</p>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #F8F8F2">fig</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">update_traces(marker_color</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;red&quot;</span><span style="color: #F8F8F2">)</span>
+<span style="color: #F8F8F2">fig</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">update_layout(template</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;plotly_white&quot;</span><span style="color: #F8F8F2">)</span>
+</code></pre></div>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="6">
+  <div class="section-inner">
+<h2>6️⃣ Tipos de gráficos más usados en análisis de datos</h2>
+<figure class="figure-img">
+  <img src="https://i.sstatic.net/o90RV.jpg" alt="Image" loading="lazy">
+  <figcaption>Image</figcaption>
+</figure>
+<h3>📈 Series temporales</h3>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #F8F8F2">px</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">line()</span>
+</code></pre></div>
+<h3>📊 Barras</h3>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #F8F8F2">px</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">bar()</span>
+</code></pre></div>
+<h3>🔵 Dispersión</h3>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #F8F8F2">px</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">scatter()</span>
+</code></pre></div>
+<h3>📦 Distribuciones</h3>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #F8F8F2">px</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">box()</span>
+<span style="color: #F8F8F2">px</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">violin()</span>
+<span style="color: #F8F8F2">px</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">histogram()</span>
+</code></pre></div>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="7">
+  <div class="section-inner">
+<h2>7️⃣ Interactividad (el verdadero valor de Plotly)</h2>
+<h3>Hover personalizado</h3>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #F8F8F2">px</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">scatter(df,</span> <span style="color: #F8F8F2">x</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;x&quot;</span><span style="color: #F8F8F2">,</span> <span style="color: #F8F8F2">y</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;y&quot;</span><span style="color: #F8F8F2">,</span> <span style="color: #F8F8F2">hover_data</span><span style="color: #FF4689">=</span><span style="color: #F8F8F2">[</span><span style="color: #E6DB74">&quot;col_extra&quot;</span><span style="color: #F8F8F2">])</span>
+</code></pre></div>
+<h3>Zoom y selección automática</h3>
+<p>Se activan sin código adicional.</p>
+<h3>Dropdowns y botones</h3>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #F8F8F2">fig</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">update_layout(</span>
+    <span style="color: #F8F8F2">updatemenus</span><span style="color: #FF4689">=</span><span style="color: #F8F8F2">[</span><span style="color: #FF4689">...</span><span style="color: #F8F8F2">]</span>
+<span style="color: #F8F8F2">)</span>
+</code></pre></div>
+<h3>Exportar a HTML</h3>
+<div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #F8F8F2">fig</span><span style="color: #FF4689">.</span><span style="color: #F8F8F2">write_html(</span><span style="color: #E6DB74">&quot;grafico_interactivo.html&quot;</span><span style="color: #F8F8F2">)</span>
+</code></pre></div>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="8">
+  <div class="section-inner">
+<h2>8️⃣ Comparación con Matplotlib y Seaborn</h2>
+<table>
+<thead>
+<tr>
+<th>Característica</th>
+<th>Matplotlib</th>
+<th>Seaborn</th>
+<th>Plotly</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interactividad</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Estilo automático</td>
+<td>⚠️</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Facilidad EDA</td>
+<td>⚠️</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Dashboards</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Exportación HTML</td>
+<td>❌</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<p>Plotly no sustituye completamente a Matplotlib, pero  <strong>sí es superior cuando el objetivo es exploración interactiva y comunicación visual moderna</strong> .</p>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="9">
+  <div class="section-inner">
+<h2>9️⃣ Buenas prácticas en el curso</h2>
+<ol>
+<li>Usar <code class="highlight">plotly.express</code> para análisis exploratorio.</li>
+<li>Pasar a <code class="highlight">graph_objects</code> cuando necesitemos:</li>
+<li>Subplots</li>
+<li>Mezcla de tipos</li>
+<li>Interacciones avanzadas</li>
+<li>Mantener consistencia visual con:
+   <div class="highlight" style="background: #272822"><pre style="line-height: 125%;"><span></span><code><span style="color: #F8F8F2">template</span><span style="color: #FF4689">=</span><span style="color: #E6DB74">&quot;plotly_white&quot;</span>
+</code></pre></div></li>
+</ol>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="10">
+  <div class="section-inner">
+<h2>🔟 Ideas clave</h2>
+<ul>
+<li>Plotly trabaja sobre <strong>DataFrames</strong></li>
+<li><code class="highlight">px</code> es rápido y declarativo</li>
+<li><code class="highlight"><span style="color: #66D9EF">go</span></code> es estructural y detallado</li>
+<li>Todo gráfico es un <strong>objeto modificable</strong></li>
+<li>La interactividad es automática</li>
+</ul>
+  </div>
+</section>
+
+
+<!-- KaTeX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// ── Render LaTeX ────────────────────────────────────────────────────────
+document.querySelectorAll('.math-display').forEach(el => {
+  try {
+    katex.render(el.dataset.formula, el, { displayMode: true, throwOnError: false });
+  } catch(e) { el.textContent = el.dataset.formula; }
+});
+
+document.querySelectorAll('.math-inline').forEach(el => {
+  try {
+    katex.render(el.dataset.formula, el, { displayMode: false, throwOnError: false });
+  } catch(e) { el.textContent = el.dataset.formula; }
+});
+
+// ── Scroll reveal ───────────────────────────────────────────────────────
+const sections = document.querySelectorAll('.section-inner');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+// ── Progress bar ────────────────────────────────────────────────────────
+const progressBar = document.getElementById('progressBar');
+
+function updateProgress() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  progressBar.style.width = progress + '%';
+}
+
+window.addEventListener('scroll', updateProgress, { passive: true });
+
+// ── Navigation dots ─────────────────────────────────────────────────────
+const navDots = document.getElementById('navDots');
+const sectionEls = document.querySelectorAll('.section');
+
+sectionEls.forEach((sec, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'nav-dot';
+  dot.setAttribute('aria-label', 'Section ' + (i + 1));
+  dot.addEventListener('click', () => {
+    sec.scrollIntoView({ behavior: 'smooth' });
+  });
+  navDots.appendChild(dot);
+});
+
+const dots = document.querySelectorAll('.nav-dot');
+
+const dotObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const idx = parseInt(entry.target.dataset.section);
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.3 });
+
+sectionEls.forEach(s => dotObserver.observe(s));
+</script>
+
+</body>
+</html>
