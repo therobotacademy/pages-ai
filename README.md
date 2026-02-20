@@ -13,7 +13,7 @@ Repositorio principal de publicaciones públicas sobre **Inteligencia Artificial
 
 | # | Título | Tipo | Nivel | Duración |
 |---|--------|------|-------|----------|
-| 1 | [Introducción a Google ADK con Python](codelabs/adk-intro.html) | Codelab | Intermedio | 45 min |
+| 1 | [Introducción a Google ADK con Python](docs/adk-intro.html) | Codelab | Intermedio | 45 min |
 
 ---
 
@@ -21,8 +21,8 @@ Repositorio principal de publicaciones públicas sobre **Inteligencia Artificial
 
 ```
 therobotacademy.github.io/
-├── index.html          # Página principal con listado de publicaciones
-├── codelabs/           # Codelabs interactivos
+├── docs/           # Páginas publicadas
+    ├── index.html          # Página principal con listado de publicaciones
 │   └── adk-intro.html  # Introducción a Google Agent Development Kit
 └── README.md
 ```
@@ -31,12 +31,12 @@ therobotacademy.github.io/
 
 ## ➕ Añadir una nueva publicación
 
-1. **Coloca el archivo HTML** en la carpeta correspondiente (`codelabs/`, `articles/`, etc.).
+1. **Coloca el archivo HTML** en la carpeta correspondiente (`docs/`)
 2. **Añade una tarjeta** en `index.html` dentro del div `#posts-grid`:
 
 ```html
 <a class="card"
-   href="codelabs/mi-nuevo-codelab.html"
+   href="mi-nuevo-codelab.html"
    data-tags="python llm agentes"
    data-title="Mi Nuevo Codelab"
    style="--card-color-1:#1a73e8; --card-color-2:#0f9d58;">
