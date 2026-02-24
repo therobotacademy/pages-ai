@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MACHINE LEARNING</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+/* ── Reset & Variables ──────────────────────────────────────────────── */
+:root {
+  --bg: #f5f0e8;
+  --bg-dark: #e8e0d0;
+  --surface: #ffffff;
+  --ink: #1a1a1a;
+  --muted: #6b6560;
+  --accent: #c45d3e;
+  --accent-glow: #e8764f;
+  --teal: #2a7a6e;
+  --code-bg: #2b2926;
+  --code-text: #e8e0d0;
+  --heading-font: 'Instrument Serif', Georgia, serif;
+  --body-font: 'DM Sans', system-ui, sans-serif;
+  --code-font: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body-font);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+/* ── Progress bar ───────────────────────────────────────────────────── */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+  z-index: 1000;
+  transition: width 0.15s ease-out;
+  width: 0%;
+}
+
+/* ── Navigation dots ────────────────────────────────────────────────── */
+.nav-dots {
+  position: fixed;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  z-index: 100;
+}
+
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.3;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  padding: 0;
+}
+
+.nav-dot:hover {
+  opacity: 0.7;
+  transform: scale(1.4);
+}
+
+.nav-dot.active {
+  opacity: 1;
+  background: var(--accent);
+  transform: scale(1.3);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+@media (max-width: 768px) {
+  .nav-dots { display: none; }
+}
+
+/* ── Sections ───────────────────────────────────────────────────────── */
+.section {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 5rem 2rem;
+}
+
+.section-inner {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.section-inner.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-divider {
+  max-width: 820px;
+  margin: 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--bg-dark),
+    var(--muted),
+    var(--bg-dark),
+    transparent
+  );
+  opacity: 0.5;
+}
+
+/* ── Hero section ───────────────────────────────────────────────────── */
+.hero-section {
+  padding: 8rem 2rem 5rem;
+  text-align: left;
+}
+
+.hero-section h1 {
+  font-size: clamp(2.8rem, 7vw, 5rem) !important;
+  text-align: center;
+  margin-bottom: 0.5rem !important;
+}
+
+.hero-section h2 {
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem) !important;
+  color: var(--muted) !important;
+  font-weight: 300 !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-bottom: 0 !important;
+  text-align: center;
+}
+
+/* ── Typography ─────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading-font);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+h1 em, h2 em, h3 em {
+  color: var(--accent);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  margin-top: 2.5rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--bg-dark);
+}
+
+h3 {
+  font-size: 1.3rem;
+  margin-top: 2rem;
+  margin-bottom: 0.8rem;
+  color: var(--accent);
+}
+
+p {
+  margin-bottom: 1.2rem;
+  color: var(--ink);
+  max-width: 65ch;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+em {
+  font-style: italic;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--accent-glow);
+}
+
+/* ── Lists ──────────────────────────────────────────────────────────── */
+ul, ol {
+  margin: 1rem 0 1.5rem 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+  color: var(--ink);
+}
+
+li::marker {
+  color: var(--accent);
+}
+
+/* ── Blockquotes ────────────────────────────────────────────────────── */
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  background: var(--surface);
+  border-radius: 0 10px 10px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+blockquote p {
+  margin-bottom: 0.5rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+blockquote strong {
+  color: var(--accent);
+  font-style: normal;
+}
+
+/* ── Code blocks ────────────────────────────────────────────────────── */
+pre {
+  background: var(--code-bg) !important;
+  border-radius: 12px;
+  padding: 1.5rem !important;
+  margin: 1.5rem 0 !important;
+  overflow-x: auto;
+  border: 1px solid rgba(128,128,128,0.1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  position: relative;
+}
+
+pre code {
+  font-family: var(--code-font) !important;
+  font-size: 0.85rem !important;
+  line-height: 1.7 !important;
+  color: var(--code-text) !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+code {
+  font-family: var(--code-font);
+  font-size: 0.88em;
+  background: var(--bg-dark);
+  color: var(--accent);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+  background: var(--surface);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+thead {
+  background: var(--code-bg);
+  color: var(--code-text);
+}
+
+th {
+  padding: 0.9rem 1.2rem;
+  text-align: left;
+  font-family: var(--code-font);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+td {
+  padding: 0.8rem 1.2rem;
+  border-top: 1px solid var(--bg-dark);
+}
+
+tr:hover td {
+  background: var(--bg);
+}
+
+/* ── LaTeX / Math ───────────────────────────────────────────────────── */
+.math-display {
+  margin: 2rem 0;
+  text-align: center;
+  overflow-x: auto;
+  padding: 1.5rem;
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--bg-dark);
+}
+
+.math-inline {
+  margin: 0 0.15em;
+}
+
+.katex { font-size: 1.1em; }
+.math-display .katex { font-size: 1.3em; }
+
+/* ── Images & Figures ───────────────────────────────────────────────── */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+img:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+/* Figure container — all images go through <figure> */
+figure.figure-img {
+  margin: 2rem auto;
+  text-align: center;
+  max-width: 100%;
+}
+
+figure.figure-img img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+/* Alignment modifiers */
+figure.figure-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+figure.figure-left {
+  float: left;
+  margin: 0.5rem 2rem 1.5rem 0;
+  max-width: 45%;
+}
+
+figure.figure-right {
+  float: right;
+  margin: 0.5rem 0 1.5rem 2rem;
+  max-width: 45%;
+}
+
+/* Size presets */
+figure.figure-small { max-width: 40%; }
+figure.figure-medium { max-width: 60%; }
+figure.figure-large { max-width: 80%; }
+figure.figure-full { max-width: 100%; }
+
+/* Banner: full width, no radius, edge-to-edge feel */
+figure.figure-banner {
+  max-width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  text-align: center;
+}
+
+figure.figure-banner img {
+  border-radius: 0;
+  width: 100%;
+  box-shadow: none;
+}
+
+/* Caption styling */
+figcaption {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.75rem;
+  font-style: italic;
+  line-height: 1.5;
+  padding: 0 1rem;
+}
+
+/* Clear floats after left/right images */
+figure.figure-left + *,
+figure.figure-right + * {
+  clear: none;
+}
+
+section::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+/* Responsive: collapse float layouts on mobile */
+@media (max-width: 600px) {
+  figure.figure-left,
+  figure.figure-right {
+    float: none;
+    max-width: 100%;
+    margin: 1.5rem auto;
+  }
+  figure.figure-small { max-width: 80%; }
+}
+
+/* ── Horizontal rules (within sections) ────────────────────────────── */
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--bg-dark), transparent);
+  margin: 2.5rem 0;
+}
+
+/* ── Background texture ─────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 15% 50%, color-mix(in srgb, var(--teal) 6%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 25%, color-mix(in srgb, var(--accent) 4%, transparent) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ── Scroll indicator at top ────────────────────────────────────────── */
+.scroll-start {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--code-font);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  animation: bob 2s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+  50% { opacity: 1; transform: translateX(-50%) translateY(5px); }
+}
+
+/* ── Print styles ───────────────────────────────────────────────────── */
+@media print {
+  .progress-bar, .nav-dots, .scroll-start { display: none; }
+  .section-inner { opacity: 1 !important; transform: none !important; }
+  .section { padding: 2rem 0; break-inside: avoid; }
+  body::before { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav class="nav-dots" id="navDots"></nav>
+
+<section class="section hero-section" data-section="0">
+  <div class="section-inner">
+<h1>MACHINE LEARNING</h1>
+<p>Este notebook es una <strong>sesión introductoria</strong> a los algoritmos clásicos de Machine Learning. A lo largo de la clase veremos:</p>
+<ul>
+<li>
+<p><strong>Definiciones básicas</strong> de qué es el aprendizaje automático.</p>
+</li>
+<li>
+<p><strong>Tipos principales de aprendizaje automático</strong> (supervisado, no supervisado y poer refuerzo).</p>
+</li>
+<li>
+<p><strong>Casos de uso y aplicaciones prácticas</strong> en distintos sectores (salud, transporte, finanzas, educación, etc.).</p>
+</li>
+<li>
+<p>Un <strong>marco de trabajo para resolver problemas</strong> con técnicas de ML.</p>
+</li>
+<li>Las <strong>bibliotecas de software más utilizadas</strong> en Python para trabajar con ML (scikit-learn, TensorFlow, PyTorch, etc.).</li>
+</ul>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section hero-section" data-section="1">
+  <div class="section-inner">
+<h1>¿QUÉ ES EL APRENDIZAJE AUTOMÁTICO?</h1>
+<h2>Definición</h2>
+<ul>
+<li>En 1959, <strong>Arthur Samuel</strong> definió el aprendizaje automático como:<blockquote>
+<p>“Un campo de estudio que da a los ordenadores la capacidad de aprender sin ser programados de forma explícita.”
+</p>
+</blockquote>
+</li>
+<li>Más tarde, <strong>Tom Mitchell (1997)</strong> ofreció otra definición muy influyente:</li>
+</ul>
+<blockquote>
+<p><em>"Se dice que un programa informático aprende de la experiencia (E) en relación con alguna tarea (T) y alguna medida de rendimiento o performance (P), si su rendimiento en (T), medido por (P), mejora con la experiencia (E)"</em></p>
+</blockquote>
+<p><strong>Ejemplo:</strong></p>
+<ul>
+<li><strong>Tarea (T):</strong> conducir por una carretera pública de cuatro carriles usando sensores de visión.</li>
+<li><strong>Medida de rendimiento (P):</strong> distancia media recorrida antes de cometer un error (valorado por un humano).</li>
+<li><strong>Experiencia de entrenamiento (E):</strong> secuencia de imágenes y comandos de dirección recogidos mientras un humano conduce.</li>
+</ul>
+<p>Por tanto, un algoritmo de ML mejora automáticamente su comportamiento cuando se le expone a más datos.</p>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="2">
+  <div class="section-inner">
+<h3>HABILIDADES RELACIONADAS CON EL APRENDIZAJE AUTOMÁTICO</h3>
+<p>El aprendizaje automático no es una disciplina aislada, sino que combina  <strong>varias áreas de conocimiento</strong>. En el famoso diagrama de Drew Conway sobre <em>Data Science</em> se representan tres grandes conjuntos:</p>
+<ul>
+<li><strong>Programación e informática:</strong> saber programar en Python, gestionar datos, trabajar con librerías de ML.</li>
+<li><strong>Estadística y matemáticas:</strong> comprender conceptos como probabilidad, regresión, optimización, métricas de evaluación.</li>
+<li><strong>Conocimiento del dominio:</strong> entender el contexto real del problema (medicina, negocios, educación, etc.) para aplicar bien las técnicas.</li>
+</ul>
+<p>Cuando estas tres áreas se solapan, aparece la Ciencia de Datos y, dentro de ella, el Aprendizaje Automático.</p>
+<p><img src="https://media.licdn.com/dms/image/v2/C4E12AQGqU3iYd_mGGQ/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1610458866824?e=1761782400&v=beta&t=A3WvI3hTjrF-hzZr-Iwc5DZRTUmwll2xmz6i9UoMKrc" width=800 /></p>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section hero-section" data-section="3">
+  <div class="section-inner">
+<h1>TIPOS DE APRENDIZAJE AUTOMÁTICO</h1>
+<p>Existen tres enfoques principales en el aprendizaje automático:</p>
+<ol>
+<li><strong>Aprendizaje supervisado</strong></li>
+<li>Se entrena al modelo con datos que incluyen las <strong>entradas</strong> y las <strong>respuestas correctas</strong> (etiquetas).</li>
+<li>El objetivo es que el algoritmo aprenda a predecir la salida correcta para nuevas entradas.</li>
+<li>Ejemplo: predecir el precio de una casa a partir de su superficie, ubicación y número de habitaciones.</li>
+<li><strong>Aprendizaje no supervisado</strong></li>
+<li>Los datos solo contienen entradas, sin etiquetas.</li>
+<li>El modelo busca <strong>estructuras ocultas o patrones</strong> dentro de los datos.</li>
+<li>Ejemplo: agrupar clientes según sus hábitos de compra sin conocer previamente sus categorías.</li>
+<li><strong>Aprendizaje por refuerzo</strong></li>
+<li>El agente aprende interactuando con un entorno y recibiendo  <strong>recompensas o penalizaciones</strong> .</li>
+<li>Se usa mucho en robótica y en juegos (como el ajedrez o videojuegos).</li>
+<li>Ejemplo: un robot que aprende a caminar optimizando la recompensa de mantenerse en pie más tiempo.</li>
+</ol>
+<p><img src="https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2018/12/Classification-Machine-Learning-Algorithms-Edureka.png" width=800/></p>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="4">
+  <div class="section-inner">
+<h2>¿Qué algoritmo usar?</h2>
+<p><img src="https://i.vas3k.ru/7w1.jpg" width=800 /></p>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="5">
+  <div class="section-inner">
+<h2>APRENDIZAJE SUPERVISADO</h2>
+<p>En este enfoque:</p>
+<ul>
+<li>Tenemos <strong>datos de entrada (X)</strong> y también las  <strong>respuestas correctas (y)</strong> .</li>
+<li>El algoritmo aprende una  <strong>función que aproxima la relación entre X e y</strong> .</li>
+</ul>
+<p>Ejemplos típicos:</p>
+<ul>
+<li><strong>Clasificación:</strong> predecir una categoría (spam o no spam, tipo de flor, enfermedad sí/no).</li>
+<li><strong>Regresión:</strong> predecir un valor numérico (precio de vivienda, temperatura, ventas mensuales).</li>
+</ul>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="6">
+  <div class="section-inner">
+<h2>APRENDIZAJE NO SUPERVISADO</h2>
+<p>En este caso:</p>
+<ul>
+<li>Solo contamos con  <strong>datos de entrada (X)</strong> , sin etiquetas de salida.</li>
+<li>El objetivo es encontrar <strong>patrones o estructuras ocultas</strong> en los datos.</li>
+</ul>
+<p>Ejemplos comunes:</p>
+<ul>
+<li><strong>Clustering (agrupamiento):</strong> separar clientes en grupos según su comportamiento de compra.</li>
+<li><strong>Reducción de dimensionalidad:</strong> simplificar los datos manteniendo la información más importante (ejemplo: usar PCA para visualizar datos en 2D).</li>
+</ul>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="7">
+  <div class="section-inner">
+<h2>APRENDIZAJE POR REFUERZO</h2>
+<p>Aquí, un <strong>agente</strong> aprende tomando decisiones en un entorno.</p>
+<ul>
+<li>Cada acción que realiza tiene una  <strong>consecuencia</strong> .</li>
+<li>Recibe una <strong>recompensa (positiva o negativa)</strong> que le indica si la decisión fue buena o mala.</li>
+<li>Con el tiempo, el agente aprende una estrategia (llamada  <em>política</em> ) para maximizar la recompensa acumulada.</li>
+</ul>
+<p>Ejemplos:</p>
+<ul>
+<li>Robots que aprenden a caminar.</li>
+<li>Algoritmos que juegan videojuegos y mejoran a medida que juegan miles de partidas.</li>
+<li>Sistemas de recomendación que ajustan sus sugerencias según las interacciones del usuario.</li>
+</ul>
+<p>La idea clave es el  <strong>aprendizaje por prueba y error</strong> , similar a cómo los humanos aprendemos muchas habilidades.</p>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section hero-section" data-section="8">
+  <div class="section-inner">
+<h1>PASOS PARA RESOLVER PROBLEMAS CON ML</h1>
+<p>Cuando queremos aplicar machine learning a un problema real, no basta con elegir un algoritmo. Debemos seguir un  <strong>proceso estructurado</strong> :</p>
+<ol>
+<li><strong>Definir el problema:</strong> entender bien la pregunta que queremos responder.</li>
+<li><strong>Recolectar y preparar los datos:</strong> conseguir datos de calidad y organizarlos correctamente.</li>
+<li><strong>Elegir un modelo:</strong> seleccionar el tipo de algoritmo más adecuado.</li>
+<li><strong>Entrenar el modelo:</strong> ajustar los parámetros con los datos de entrenamiento.</li>
+<li><strong>Evaluar el modelo:</strong> medir su rendimiento con datos que no ha visto antes.</li>
+<li><strong>Ajustar y mejorar:</strong> probar con diferentes configuraciones, más datos o técnicas de optimización.</li>
+<li><strong>Implementar la solución:</strong> llevar el modelo a producción para que aporte valor en el mundo real.</li>
+</ol>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="9">
+  <div class="section-inner">
+<h2>RECOLECCIÓN DE DATOS</h2>
+<p>El primer paso en cualquier proyecto de ML es  <strong>conseguir datos de calidad</strong> .</p>
+<ul>
+<li>Los datos pueden provenir de sensores, bases de datos, encuestas, imágenes, audio, texto o transacciones financieras.</li>
+<li>Es importante considerar la <strong>cantidad</strong> (muchos datos permiten entrenar mejor) y la <strong>calidad</strong> (datos con errores generan modelos poco fiables).</li>
+<li>Ejemplo: para predecir la probabilidad de abandono de clientes, necesitamos datos como antigüedad, uso del servicio, historial de pagos.</li>
+</ul>
+  </div>
+</section>
+<div class="section-divider"></div>
+<section class="section" data-section="10">
+  <div class="section-inner">
+<h2>PREPROCESAMIENTO DE DATOS</h2>
+<p>Tareas a realizar:</p>
+<ul>
+<li><strong>Limpieza:</strong> eliminar duplicados, corregir errores tipográficos, manejar valores faltantes.</li>
+<li><strong>Normalización o estandarización:</strong> ajustar las escalas de las variables (por ejemplo, edad en años y salario en miles de euros).</li>
+<li><strong>Codificación de variables categóricas:</strong> convertir texto (“rojo”, “verde”, “azul”) en números que entienda el algoritmo.</li>
+<li><strong>División en conjuntos de entrenamiento y prueba:</strong> asegurar que podemos evaluar de forma justa el modelo.</li>
+</ul>
+  </div>
+</section>
+
+
+<!-- KaTeX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+// ── Render LaTeX ────────────────────────────────────────────────────────
+document.querySelectorAll('.math-display').forEach(el => {
+  try {
+    katex.render(el.dataset.formula, el, { displayMode: true, throwOnError: false });
+  } catch(e) { el.textContent = el.dataset.formula; }
+});
+
+document.querySelectorAll('.math-inline').forEach(el => {
+  try {
+    katex.render(el.dataset.formula, el, { displayMode: false, throwOnError: false });
+  } catch(e) { el.textContent = el.dataset.formula; }
+});
+
+// ── Scroll reveal ───────────────────────────────────────────────────────
+const sections = document.querySelectorAll('.section-inner');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+// ── Progress bar ────────────────────────────────────────────────────────
+const progressBar = document.getElementById('progressBar');
+
+function updateProgress() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  progressBar.style.width = progress + '%';
+}
+
+window.addEventListener('scroll', updateProgress, { passive: true });
+
+// ── Navigation dots ─────────────────────────────────────────────────────
+const navDots = document.getElementById('navDots');
+const sectionEls = document.querySelectorAll('.section');
+
+sectionEls.forEach((sec, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'nav-dot';
+  dot.setAttribute('aria-label', 'Section ' + (i + 1));
+  dot.addEventListener('click', () => {
+    sec.scrollIntoView({ behavior: 'smooth' });
+  });
+  navDots.appendChild(dot);
+});
+
+const dots = document.querySelectorAll('.nav-dot');
+
+const dotObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const idx = parseInt(entry.target.dataset.section);
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { threshold: 0.3 });
+
+sectionEls.forEach(s => dotObserver.observe(s));
+</script>
+
+</body>
+</html>

@@ -15,6 +15,8 @@ Repositorio principal de publicaciones públicas sobre **Inteligencia Artificial
 |---|--------|------|-------|----------|
 | 1 | [Introducción a Google ADK con Python](https://therobotacademy.github.io/pages-ai/adk-intro.html) | Codelab | Intermedio | 45 min |
 | 2 | [Visualización de Datos con Plotly](https://therobotacademy.github.io/pages-ai/plotly-intro.html) | Teoría  | Inicial    | 30 min |
+| 2 | [Introducción al Machine Learning](https://therobotacademy.github.io/pages-ai/basics_ml.html)     | Teoría  | Inicial    | 60 min |
+| 2 | [Versión CodeLab](https://therobotacademy.github.io/pages-ai/Basics_ML-codelab.html)              |         |            |        |
 
 ---
 

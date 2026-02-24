@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Codelab Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+  :root {
+    --google-blue: #1a73e8;
+    --google-blue-dark: #1557b0;
+    --google-blue-light: #e8f0fe;
+    --google-green: #0f9d58;
+    --google-yellow: #f9ab00;
+    --google-red: #d93025;
+    --google-grey-50: #f8f9fa;
+    --google-grey-100: #f1f3f4;
+    --google-grey-200: #e8eaed;
+    --google-grey-300: #dadce0;
+    --google-grey-500: #9aa0a6;
+    --google-grey-700: #5f6368;
+    --google-grey-900: #202124;
+    --sidebar-width: 256px;
+    --header-height: 64px;
+    --progress-height: 4px;
+    --content-max-width: 800px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Roboto', 'Google Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--google-grey-900);
+    background: #fff;
+    overflow-x: hidden;
+  }
+
+  /* ── PROGRESS BAR ── */
+  #progress-bar-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--progress-height);
+    background: var(--google-grey-200);
+    z-index: 1000;
+  }
+  #progress-bar {
+    height: 100%;
+    background: var(--google-blue);
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  /* ── HEADER ── */
+  #header {
+    position: fixed;
+    top: var(--progress-height);
+    left: 0; right: 0;
+    height: var(--header-height);
+    background: #fff;
+    border-bottom: 1px solid var(--google-grey-200);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 900;
+    gap: 16px;
+  }
+  #header .logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  #header .logo-link svg { height: 24px; }
+  #header .codelab-title {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--google-grey-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+  #header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .header-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid var(--google-grey-300);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--google-grey-700);
+    font-family: 'Google Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+    text-decoration: none;
+  }
+  .header-btn:hover { background: var(--google-grey-50); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .header-btn svg { width: 16px; height: 16px; }
+  #menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--google-grey-700);
+  }
+  #menu-toggle svg { width: 24px; height: 24px; }
+
+  /* ── LAYOUT ── */
+  #layout {
+    display: flex;
+    padding-top: calc(var(--header-height) + var(--progress-height));
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background: #fff;
+    border-right: 1px solid var(--google-grey-200);
+    position: fixed;
+    top: calc(var(--header-height) + var(--progress-height));
+    bottom: 0;
+    left: 0;
+    overflow-y: auto;
+    padding: 16px 0;
+    transition: transform 0.3s ease;
+  }
+  #sidebar.hidden { transform: translateX(-100%); }
+
+  .sidebar-nav-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+    position: relative;
+  }
+  .sidebar-nav-item:hover { background: var(--google-grey-50); }
+  .sidebar-nav-item.active {
+    background: var(--google-blue-light);
+    border-left-color: var(--google-blue);
+  }
+  .step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--google-grey-200);
+    color: var(--google-grey-700);
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Google Sans', sans-serif;
+    transition: background 0.2s, color 0.2s;
+  }
+  .sidebar-nav-item.active .step-number {
+    background: var(--google-blue);
+    color: #fff;
+  }
+  .sidebar-nav-item.completed .step-number {
+    background: var(--google-green);
+    color: #fff;
+  }
+  .step-info { flex: 1; min-width: 0; }
+  .step-title {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--google-grey-700);
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .sidebar-nav-item.active .step-title { color: var(--google-blue); font-weight: 500; }
+  .step-duration {
+    font-size: 11px;
+    color: var(--google-grey-500);
+    margin-top: 2px;
+  }
+  .sidebar-section-header {
+    padding: 12px 20px 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--google-grey-500);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  #main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 40px 40px 100px;
+    max-width: calc(var(--content-max-width) + var(--sidebar-width) + 80px);
+  }
+  #step-content {
+    max-width: var(--content-max-width);
+  }
+
+  /* ── STEP CONTENT STYLES ── */
+  #step-content h1 {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--google-grey-900);
+    margin-bottom: 24px;
+    line-height: 1.3;
+  }
+  #step-content h2 {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--google-grey-900);
+    margin: 32px 0 12px;
+    line-height: 1.3;
+  }
+  #step-content h3 {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--google-grey-900);
+    margin: 24px 0 8px;
+  }
+  #step-content h4 {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    margin: 20px 0 6px;
+  }
+  #step-content p {
+    margin-bottom: 16px;
+    color: var(--google-grey-900);
+    line-height: 1.7;
+    font-size: 14px;
+  }
+  #step-content a { color: var(--google-blue); text-decoration: none; }
+  #step-content a:hover { text-decoration: underline; }
+  #step-content strong { font-weight: 500; }
+  #step-content em { font-style: italic; }
+
+  /* Lists */
+  #step-content ul, #step-content ol {
+    margin: 8px 0 16px 24px;
+  }
+  #step-content li {
+    margin-bottom: 6px;
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  /* Inline code */
+  #step-content code:not([class]) {
+    background: var(--google-grey-100);
+    color: #c5221f;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+
+  /* Code blocks */
+  .code-block-wrapper {
+    position: relative;
+    margin: 16px 0;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .code-block-header {
+    background: #1e2227;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .code-lang-label {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: #9aa0a6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: #9aa0a6;
+    font-size: 11px;
+    font-family: 'Google Sans', sans-serif;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); color: #e8eaed; }
+  .copy-btn.copied { color: #81c995; }
+  .code-block-wrapper pre {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: #282c34 !important;
+    padding: 16px !important;
+    overflow-x: auto;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+  .code-block-wrapper pre code {
+    font-family: 'Roboto Mono', monospace !important;
+    font-size: 13px !important;
+  }
+
+  /* Tables */
+  #step-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  #step-content th {
+    background: var(--google-grey-100);
+    font-weight: 500;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid var(--google-grey-300);
+    font-family: 'Google Sans', sans-serif;
+  }
+  #step-content td {
+    padding: 10px 12px;
+    border: 1px solid var(--google-grey-300);
+    vertical-align: top;
+  }
+  #step-content tr:hover td { background: var(--google-grey-50); }
+
+  /* Images */
+  #step-content img {
+    max-width: 100%;
+    border-radius: 6px;
+    margin: 16px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+
+  /* Callout boxes */
+  .callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-body { flex: 1; }
+  .callout-body p:last-child { margin-bottom: 0; }
+  .callout.note { background: #e8f0fe; border-left: 4px solid var(--google-blue); }
+  .callout.tip  { background: #e6f4ea; border-left: 4px solid var(--google-green); }
+  .callout.warn { background: #fef7e0; border-left: 4px solid var(--google-yellow); }
+  .callout.important { background: #fce8e6; border-left: 4px solid var(--google-red); }
+
+  /* Horizontal rules */
+  #step-content hr { border: none; border-top: 1px solid var(--google-grey-200); margin: 24px 0; }
+
+  /* Blockquote */
+  #step-content blockquote {
+    border-left: 4px solid var(--google-grey-300);
+    margin: 16px 0;
+    padding: 8px 16px;
+    color: var(--google-grey-700);
+    font-style: italic;
+  }
+
+  /* Step header */
+  .step-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--google-grey-200);
+  }
+  .step-header-num {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 14px;
+    color: var(--google-grey-500);
+    white-space: nowrap;
+  }
+  .step-header-title {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--google-grey-900);
+    line-height: 1.3;
+  }
+  .step-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .step-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--google-grey-500);
+  }
+  .step-meta-item svg { width: 14px; height: 14px; }
+
+  /* ── NAVIGATION BUTTONS ── */
+  #nav-footer {
+    position: fixed;
+    bottom: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    background: #fff;
+    border-top: 1px solid var(--google-grey-200);
+    padding: 14px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 800;
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-family: 'Google Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    text-decoration: none;
+  }
+  .nav-btn.prev {
+    background: var(--google-grey-100);
+    color: var(--google-grey-700);
+  }
+  .nav-btn.prev:hover { background: var(--google-grey-200); }
+  .nav-btn.next {
+    background: var(--google-blue);
+    color: #fff;
+  }
+  .nav-btn.next:hover { background: var(--google-blue-dark); box-shadow: 0 2px 6px rgba(26,115,232,0.4); }
+  .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+  .nav-btn svg { width: 18px; height: 18px; }
+  .nav-step-info {
+    font-size: 12px;
+    color: var(--google-grey-500);
+  }
+
+  /* ── LANDING / DROP ZONE ── */
+  #landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px;
+    background: var(--google-grey-50);
+  }
+  .landing-logo {
+    margin-bottom: 32px;
+  }
+  .landing-logo svg { height: 40px; }
+  .landing-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+    padding: 48px;
+    max-width: 540px;
+    width: 100%;
+    text-align: center;
+  }
+  .landing-card h1 {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--google-grey-900);
+    margin-bottom: 10px;
+  }
+  .landing-card p {
+    font-size: 14px;
+    color: var(--google-grey-700);
+    margin-bottom: 36px;
+    line-height: 1.6;
+  }
+  #drop-zone {
+    border: 2px dashed var(--google-grey-300);
+    border-radius: 8px;
+    padding: 48px 32px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+  #drop-zone:hover, #drop-zone.dragover {
+    border-color: var(--google-blue);
+    background: var(--google-blue-light);
+  }
+  #drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-icon { margin-bottom: 16px; color: var(--google-grey-500); }
+  .drop-icon svg { width: 48px; height: 48px; }
+  .drop-label {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 15px;
+    color: var(--google-grey-700);
+    margin-bottom: 6px;
+  }
+  .drop-sublabel { font-size: 12px; color: var(--google-grey-500); }
+  .drop-label span { color: var(--google-blue); font-weight: 500; }
+
+  .format-hint {
+    margin-top: 24px;
+    text-align: left;
+    background: var(--google-grey-50);
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .format-hint h4 {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--google-grey-700);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .format-hint code {
+    display: block;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: var(--google-grey-700);
+    line-height: 1.8;
+    white-space: pre;
+  }
+
+  /* ── CONGRATULATIONS STEP ── */
+  .congrats-banner {
+    background: linear-gradient(135deg, #1a73e8 0%, #0f9d58 100%);
+    border-radius: 8px;
+    padding: 32px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .congrats-banner h2 {
+    font-family: 'Google Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+  .congrats-banner p { opacity: 0.9; font-size: 15px; color: #fff; }
+  .congrats-icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--google-grey-900);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Google Sans', sans-serif;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    #menu-toggle { display: flex; }
+    #sidebar {
+      z-index: 850;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+    }
+    #sidebar:not(.hidden) { transform: translateX(0); }
+    #sidebar.hidden { transform: translateX(-100%); }
+    #main-content { margin-left: 0; padding: 24px 20px 100px; }
+    #nav-footer { left: 0; padding: 14px 20px; }
+    .landing-card { padding: 32px 24px; }
+  }
+
+  /* ── PRINT / PDF ── */
+  @media print {
+    #header, #sidebar, #nav-footer, #progress-bar-container { display: none !important; }
+    #layout { padding-top: 0; }
+    #main-content { margin-left: 0; padding: 20px; }
+    #step-content { max-width: 100%; }
+    .code-block-wrapper { box-shadow: none; border: 1px solid #ddd; }
+    .copy-btn { display: none; }
+    body { font-size: 11pt; }
+  }
+
+  /* ── SIDEBAR OVERLAY (mobile) ── */
+  #sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 840;
+  }
+  #sidebar-overlay.visible { display: block; }
+
+  /* Animation */
+  #step-content { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- LANDING SCREEN -->
+<div id="landing" style="display:none">
+  <div class="landing-logo">
+    <svg viewBox="0 0 200 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <text x="0" y="24" font-family="Google Sans, sans-serif" font-size="22" fill="#5f6368">Google</text>
+      <text x="72" y="24" font-family="Google Sans, sans-serif" font-size="22" fill="#1a73e8"> Codelabs</text>
+    </svg>
+  </div>
+  <div class="landing-card">
+    <h1>Codelab Viewer</h1>
+    <p>Convierte tu fichero Markdown al formato interactivo de Google Codelabs. Arrastra tu fichero <strong>.md</strong> para comenzar.</p>
+
+    <div id="drop-zone">
+      <input type="file" id="file-input" accept=".md,.markdown,text/markdown,text/plain">
+      <div class="drop-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+        </svg>
+      </div>
+      <div class="drop-label"><span>Haz clic para seleccionar</span> o arrastra aquí</div>
+      <div class="drop-sublabel">Ficheros .md · Markdown</div>
+    </div>
+
+    <div class="format-hint">
+      <h4>Formato esperado del Markdown</h4>
+      <code>---
+title: Mi Codelab
+summary: Descripción breve
+authors: Tu Nombre
+duration: 30
+---
+
+## Introducción
+Contenido del primer paso...
+
+---
+
+## Paso 2: Instalación
+duration: 5
+
+Contenido del segundo paso...
+
+---
+
+## Paso Final: Conclusión</code>
+    </div>
+  </div>
+</div>
+
+<!-- CODELAB APP (hidden initially) -->
+<div id="app">
+  <!-- Progress bar -->
+  <div id="progress-bar-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <!-- Header -->
+  <header id="header">
+    <button id="menu-toggle" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <a href="#" class="logo-link" id="home-link">
+      <svg viewBox="0 0 140 20" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="16" font-family="Google Sans, sans-serif" font-size="16" fill="#5f6368">Google</text>
+        <text x="52" y="16" font-family="Google Sans, sans-serif" font-size="16" fill="#1a73e8"> Codelabs</text>
+      </svg>
+    </a>
+    <span class="codelab-title" id="header-title"></span>
+    <div id="header-actions">
+      <button class="header-btn" id="pdf-btn" title="Exportar a PDF">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/><polyline points="8 15 12 18 16 15"/>
+        </svg>
+        PDF
+      </button>
+      <button class="header-btn" id="reset-btn" title="Cargar otro fichero">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+        </svg>
+        Nuevo
+      </button>
+    </div>
+  </header>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div id="sidebar-overlay"></div>
+
+  <!-- Layout -->
+  <div id="layout">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="sidebar-section-header">CONTENIDO</div>
+      <div id="sidebar-nav"></div>
+    </nav>
+
+    <!-- Main content -->
+    <main id="main-content">
+      <div id="step-content"></div>
+    </main>
+  </div>
+
+  <!-- Bottom navigation -->
+  <div id="nav-footer">
+    <button class="nav-btn prev" id="btn-prev">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Anterior
+    </button>
+    <span class="nav-step-info" id="nav-step-info"></span>
+    <button class="nav-btn next" id="btn-next">
+      Siguiente
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════
+//  MARKDOWN PARSER
+// ═══════════════════════════════════════════════════════
+const MarkdownParser = {
+  parseFrontmatter(text) {
+    const meta = { title: 'Codelab', summary: '', authors: '', duration: 0 };
+    const fm = text.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+    if (!fm) return { meta, body: text };
+    const body = text.slice(fm[0].length);
+    fm[1].split('\n').forEach(line => {
+      const m = line.match(/^(\w+)\s*:\s*(.+)$/);
+      if (m) meta[m[1].trim()] = m[2].trim();
+    });
+    if (meta.duration) meta.duration = parseInt(meta.duration) || 0;
+    return { meta, body };
+  },
+
+  parseSteps(body) {
+    // Split by --- separator (at least 3 dashes on own line)
+    const rawParts = body.split(/\n---+\n/);
+    const steps = [];
+
+    rawParts.forEach((part, idx) => {
+      part = part.trim();
+      if (!part) return;
+
+      // Extract per-step metadata (duration: N lines before ## or at top)
+      let stepDuration = 0;
+      let content = part;
+
+      // Check for inline duration field (duration: 5 on its own line within the step)
+      const durationMatch = content.match(/^duration\s*:\s*(\d+)\s*\n/m);
+      if (durationMatch) {
+        stepDuration = parseInt(durationMatch[1]);
+        content = content.replace(durationMatch[0], '');
+      }
+
+      // Extract title from first H2 (## Title)
+      const h2Match = content.match(/^#{1,2}\s+(.+)$/m);
+      let title = h2Match ? h2Match[1].trim() : `Paso ${idx + 1}`;
+      // Remove leading numbering like "1. " or "1: "
+      title = title.replace(/^\d+[\.\:]\s*/, '');
+
+      // Remove the H2 from content (it'll be rendered as step header)
+      if (h2Match) {
+        content = content.replace(h2Match[0], '').trim();
+      }
+
+      steps.push({ title, content, duration: stepDuration, index: idx });
+    });
+
+    return steps;
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  MARKDOWN RENDERER
+// ═══════════════════════════════════════════════════════
+const MarkdownRenderer = {
+  render(md) {
+    let html = md;
+
+    // Protect code blocks first
+    const codeBlocks = [];
+    html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+      const idx = codeBlocks.length;
+      codeBlocks.push({ lang: lang || 'text', code: code.trimEnd() });
+      return `%%CODEBLOCK_${idx}%%`;
+    });
+
+    // Callout boxes: > aside negative/positive/warning/special
+    html = html.replace(/^>\s*aside\s+(negative|positive|warning|special)\s*\n((?:>.*\n?)*)/gm, (_, type, body) => {
+      const content = body.replace(/^>\s?/gm, '').trim();
+      const typeMap = { negative: 'warn', positive: 'tip', warning: 'important', special: 'note' };
+      const iconMap = { warn: '⚠️', tip: '💡', important: '🚨', note: 'ℹ️' };
+      const cls = typeMap[type] || 'note';
+      return `<div class="callout ${cls}"><span class="callout-icon">${iconMap[cls]}</span><div class="callout-body">${this.render(content)}</div></div>`;
+    });
+
+    // Standard blockquote
+    html = html.replace(/^((?:>.*\n?)+)/gm, (match) => {
+      const content = match.replace(/^>\s?/gm, '').trim();
+      return `<blockquote>${content}</blockquote>`;
+    });
+
+    // Headings
+    html = html.replace(/^#{6}\s+(.+)$/gm, '<h6>$1</h6>');
+    html = html.replace(/^#{5}\s+(.+)$/gm, '<h5>$1</h5>');
+    html = html.replace(/^#{4}\s+(.+)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^#{3}\s+(.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^#{2}\s+(.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^#{1}\s+(.+)$/gm, '<h1>$1</h1>');
+
+    // Tables
+    html = html.replace(/^\|(.+)\|\s*\n\|[-| :]+\|\s*\n((?:\|.+\|\s*\n?)*)/gm, (_, header, rows) => {
+      const ths = header.split('|').map(c => c.trim()).filter(Boolean)
+        .map(c => `<th>${c}</th>`).join('');
+      const trs = rows.trim().split('\n').map(row => {
+        const tds = row.split('|').map(c => c.trim()).filter(Boolean)
+          .map(c => `<td>${c}</td>`).join('');
+        return `<tr>${tds}</tr>`;
+      }).join('');
+      return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+    });
+
+    // Ordered lists
+    html = html.replace(/^((?:\d+\.\s+.+\n?)+)/gm, match => {
+      const items = match.trim().split('\n')
+        .map(l => l.replace(/^\d+\.\s+/, '').trim())
+        .map(l => `<li>${l}</li>`).join('');
+      return `<ol>${items}</ol>`;
+    });
+
+    // Unordered lists
+    html = html.replace(/^((?:[-*+]\s+.+\n?)+)/gm, match => {
+      const items = match.trim().split('\n')
+        .map(l => l.replace(/^[-*+]\s+/, '').trim())
+        .map(l => `<li>${l}</li>`).join('');
+      return `<ul>${items}</ul>`;
+    });
+
+    // Horizontal rules (already split by parser, but some may remain)
+    html = html.replace(/^---+$/gm, '<hr>');
+
+    // Bold + italic
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Links and images
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    // Paragraphs (lines that aren't blocks)
+    html = html.replace(/^(?!<[a-z]|%%CODE)(.+)$/gm, '<p>$1</p>');
+
+    // Restore code blocks
+    html = html.replace(/%%CODEBLOCK_(\d+)%%/g, (_, i) => {
+      const { lang, code } = codeBlocks[parseInt(i)];
+      const safeCode = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const langLabel = lang !== 'text' ? lang : '';
+      return `<div class="code-block-wrapper">
+        <div class="code-block-header">
+          <span class="code-lang-label">${langLabel}</span>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+            Copiar
+          </button>
+        </div>
+        <pre><code class="language-${lang}">${safeCode}</code></pre>
+      </div>`;
+    });
+
+    // Clean up extra blank lines
+    html = html.replace(/\n{3,}/g, '\n\n');
+    return html;
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  CODELAB APP
+// ═══════════════════════════════════════════════════════
+const CodelabApp = {
+  steps: [],
+  meta: {},
+  currentStep: 0,
+  storageKey: '',
+
+  init(markdownText) {
+    const { meta, body } = MarkdownParser.parseFrontmatter(markdownText);
+    this.meta = meta;
+    this.steps = MarkdownParser.parseSteps(body);
+
+    if (!this.steps.length) {
+      showToast('No se encontraron pasos. Usa --- para separar secciones.');
+      return;
+    }
+
+    this.storageKey = 'codelab_step_' + btoa(meta.title || 'codelab').replace(/[^a-z0-9]/gi,'').slice(0,20);
+
+    // Restore progress
+    const saved = parseInt(localStorage.getItem(this.storageKey)) || 0;
+    this.currentStep = Math.min(saved, this.steps.length - 1);
+
+    // Switch to app view
+    document.getElementById('landing').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('header-title').textContent = meta.title || 'Codelab';
+    document.title = (meta.title || 'Codelab') + ' | Google Codelabs';
+
+    this.renderSidebar();
+    this.renderStep(this.currentStep);
+  },
+
+  renderSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    nav.innerHTML = this.steps.map((step, i) => {
+      const cls = i < this.currentStep ? 'completed' : i === this.currentStep ? 'active' : '';
+      const icon = i < this.currentStep ? '✓' : (i + 1);
+      const dur = step.duration ? `<div class="step-duration">⏱ ${step.duration} min</div>` : '';
+      return `<div class="sidebar-nav-item ${cls}" onclick="CodelabApp.goTo(${i})">
+        <div class="step-number">${icon}</div>
+        <div class="step-info">
+          <div class="step-title">${escapeHtml(step.title)}</div>
+          ${dur}
+        </div>
+      </div>`;
+    }).join('');
+  },
+
+  renderStep(idx) {
+    const step = this.steps[idx];
+    const isLast = idx === this.steps.length - 1;
+    const stepNum = idx + 1;
+    const totalSteps = this.steps.length;
+
+    // Step meta row
+    const metaItems = [];
+    if (step.duration) metaItems.push(`<span class="step-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${step.duration} minutos</span>`);
+
+    const totalDuration = this.steps.reduce((s, st) => s + (st.duration||0), 0);
+    if (idx === 0 && totalDuration) metaItems.push(`<span class="step-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Total: ${totalDuration} min</span>`);
+    if (idx === 0 && this.meta.authors) metaItems.push(`<span class="step-meta-item">✍️ ${escapeHtml(this.meta.authors)}</span>`);
+
+    const metaHtml = metaItems.length ? `<div class="step-meta">${metaItems.join('')}</div>` : '';
+
+    // Congratulations banner for last step
+    const congratsBanner = isLast ? `
+      <div class="congrats-banner">
+        <div class="congrats-icon">🎉</div>
+        <h2>¡Felicidades!</h2>
+        <p>${escapeHtml(this.meta.summary || 'Has completado el codelab.')}</p>
+      </div>` : '';
+
+    const content = `
+      <div class="step-header">
+        <span class="step-header-num">Paso ${stepNum} de ${totalSteps}</span>
+        <h1 class="step-header-title">${escapeHtml(step.title)}</h1>
+      </div>
+      ${metaHtml}
+      ${congratsBanner}
+      ${MarkdownRenderer.render(step.content)}
+    `;
+
+    const el = document.getElementById('step-content');
+    el.innerHTML = content;
+    el.style.animation = 'none';
+    el.offsetHeight; // reflow
+    el.style.animation = '';
+
+    // Syntax highlight
+    if (window.Prism) Prism.highlightAllUnder(el);
+
+    // Update progress bar
+    const pct = totalSteps > 1 ? (idx / (totalSteps - 1)) * 100 : 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+
+    // Update nav buttons
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    btnPrev.disabled = idx === 0;
+    btnNext.innerHTML = isLast
+      ? 'Completar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>'
+      : 'Siguiente <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>';
+    document.getElementById('nav-step-info').textContent = `${stepNum} / ${totalSteps}`;
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Persist progress
+    localStorage.setItem(this.storageKey, idx);
+  },
+
+  goTo(idx) {
+    if (idx < 0 || idx >= this.steps.length) return;
+    this.currentStep = idx;
+    this.renderSidebar();
+    this.renderStep(idx);
+
+    // Close mobile sidebar
+    if (window.innerWidth <= 768) {
+      document.getElementById('sidebar').classList.add('hidden');
+      document.getElementById('sidebar-overlay').classList.remove('visible');
+    }
+  },
+
+  next() { this.goTo(this.currentStep + 1); },
+  prev() { this.goTo(this.currentStep - 1); },
+
+  exportPDF() {
+    showToast('Preparando PDF... Usa el diálogo de impresión del navegador.');
+    setTimeout(() => window.print(), 600);
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  FILE LOADER
+// ═══════════════════════════════════════════════════════
+function loadFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      CodelabApp.init(e.target.result);
+    } catch (err) {
+      showToast('Error al parsear el fichero: ' + err.message);
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Drop zone
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+});
+
+document.getElementById('file-input').addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+// ═══════════════════════════════════════════════════════
+//  UI CONTROLS
+// ═══════════════════════════════════════════════════════
+document.getElementById('btn-prev').addEventListener('click', () => CodelabApp.prev());
+document.getElementById('btn-next').addEventListener('click', () => CodelabApp.next());
+document.getElementById('pdf-btn').addEventListener('click', () => CodelabApp.exportPDF());
+document.getElementById('reset-btn').addEventListener('click', () => {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('file-input').value = '';
+});
+document.getElementById('home-link').addEventListener('click', e => {
+  e.preventDefault();
+  CodelabApp.goTo(0);
+});
+
+// Mobile menu
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebar-overlay');
+document.getElementById('menu-toggle').addEventListener('click', () => {
+  sidebar.classList.toggle('hidden');
+  overlay.classList.toggle('visible');
+});
+overlay.addEventListener('click', () => {
+  sidebar.classList.add('hidden');
+  overlay.classList.remove('visible');
+});
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (document.getElementById('app').style.display === 'none') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') CodelabApp.next();
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') CodelabApp.prev();
+});
+
+// ═══════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════
+function copyCode(btn) {
+  const code = btn.closest('.code-block-wrapper').querySelector('code').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg> Copiado';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  AUTO-LOAD EMBEDDED MARKDOWN (Published Version)
+// ═══════════════════════════════════════════════════════
+const EMBEDDED_MARKDOWN = `# MACHINE LEARNING
+
+Este notebook es una **sesión introductoria** a los algoritmos clásicos de Machine Learning. A lo largo de la clase veremos:
+
+* **Definiciones básicas** de qué es el aprendizaje automático.
+* **Tipos principales de aprendizaje automático** (supervisado, no supervisado y poer refuerzo).
+* **Casos de uso y aplicaciones prácticas** en distintos sectores (salud, transporte, finanzas, educación, etc.).
+* Un **marco de trabajo para resolver problemas** con técnicas de ML.
+* Las **bibliotecas de software más utilizadas** en Python para trabajar con ML (scikit-learn, TensorFlow, PyTorch, etc.).
+
+---
+
+# ¿QUÉ ES EL APRENDIZAJE AUTOMÁTICO?
+
+## Definición
+
+* En 1959, **Arthur Samuel** definió el aprendizaje automático como:
+  > “Un campo de estudio que da a los ordenadores la capacidad de aprender sin ser programados de forma explícita.”
+  >
+* Más tarde, **Tom Mitchell (1997)** ofreció otra definición muy influyente:
+
+> *"Se dice que un programa informático aprende de la experiencia (E) en relación con alguna tarea (T) y alguna medida de rendimiento o performance (P), si su rendimiento en (T), medido por (P), mejora con la experiencia (E)"*
+
+**Ejemplo:**
+
+* **Tarea (T):** conducir por una carretera pública de cuatro carriles usando sensores de visión.
+* **Medida de rendimiento (P):** distancia media recorrida antes de cometer un error (valorado por un humano).
+* **Experiencia de entrenamiento (E):** secuencia de imágenes y comandos de dirección recogidos mientras un humano conduce.
+
+Por tanto, un algoritmo de ML mejora automáticamente su comportamiento cuando se le expone a más datos.
+
+---
+
+## HABILIDADES RELACIONADAS CON EL APRENDIZAJE AUTOMÁTICO
+
+El aprendizaje automático no es una disciplina aislada, sino que combina  **varias áreas de conocimiento**. En el famoso diagrama de Drew Conway sobre *Data Science* se representan tres grandes conjuntos:
+
+* **Programación e informática:** saber programar en Python, gestionar datos, trabajar con librerías de ML.
+* **Estadística y matemáticas:** comprender conceptos como probabilidad, regresión, optimización, métricas de evaluación.
+* **Conocimiento del dominio:** entender el contexto real del problema (medicina, negocios, educación, etc.) para aplicar bien las técnicas.
+
+Cuando estas tres áreas se solapan, aparece la Ciencia de Datos y, dentro de ella, el Aprendizaje Automático.
+
+<img src="https://media.licdn.com/dms/image/v2/C4E12AQGqU3iYd_mGGQ/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1610458866824?e=1761782400&v=beta&t=A3WvI3hTjrF-hzZr-Iwc5DZRTUmwll2xmz6i9UoMKrc" width=800 />
+
+---
+
+# TIPOS DE APRENDIZAJE AUTOMÁTICO
+
+Existen tres enfoques principales en el aprendizaje automático:
+
+1. **Aprendizaje supervisado**
+   * Se entrena al modelo con datos que incluyen las **entradas** y las **respuestas correctas** (etiquetas).
+   * El objetivo es que el algoritmo aprenda a predecir la salida correcta para nuevas entradas.
+   * Ejemplo: predecir el precio de una casa a partir de su superficie, ubicación y número de habitaciones.
+2. **Aprendizaje no supervisado**
+   * Los datos solo contienen entradas, sin etiquetas.
+   * El modelo busca **estructuras ocultas o patrones** dentro de los datos.
+   * Ejemplo: agrupar clientes según sus hábitos de compra sin conocer previamente sus categorías.
+3. **Aprendizaje por refuerzo**
+   * El agente aprende interactuando con un entorno y recibiendo  **recompensas o penalizaciones** .
+   * Se usa mucho en robótica y en juegos (como el ajedrez o videojuegos).
+   * Ejemplo: un robot que aprende a caminar optimizando la recompensa de mantenerse en pie más tiempo.
+
+<img src="https://d1jnx9ba8s6j9r.cloudfront.net/blog/wp-content/uploads/2018/12/Classification-Machine-Learning-Algorithms-Edureka.png" width=800/>
+
+---
+
+## ¿Qué algoritmo usar?
+
+<img src="https://i.vas3k.ru/7w1.jpg" width=800 />
+
+---
+
+## APRENDIZAJE SUPERVISADO
+
+En este enfoque:
+
+* Tenemos **datos de entrada (X)** y también las  **respuestas correctas (y)** .
+* El algoritmo aprende una  **función que aproxima la relación entre X e y** .
+
+Ejemplos típicos:
+
+* **Clasificación:** predecir una categoría (spam o no spam, tipo de flor, enfermedad sí/no).
+* **Regresión:** predecir un valor numérico (precio de vivienda, temperatura, ventas mensuales).
+
+---
+
+## APRENDIZAJE NO SUPERVISADO
+
+En este caso:
+
+* Solo contamos con  **datos de entrada (X)** , sin etiquetas de salida.
+* El objetivo es encontrar **patrones o estructuras ocultas** en los datos.
+
+Ejemplos comunes:
+
+* **Clustering (agrupamiento):** separar clientes en grupos según su comportamiento de compra.
+* **Reducción de dimensionalidad:** simplificar los datos manteniendo la información más importante (ejemplo: usar PCA para visualizar datos en 2D).
+
+---
+
+## APRENDIZAJE POR REFUERZO
+
+Aquí, un **agente** aprende tomando decisiones en un entorno.
+
+* Cada acción que realiza tiene una  **consecuencia** .
+* Recibe una **recompensa (positiva o negativa)** que le indica si la decisión fue buena o mala.
+* Con el tiempo, el agente aprende una estrategia (llamada  *política* ) para maximizar la recompensa acumulada.
+
+Ejemplos:
+
+* Robots que aprenden a caminar.
+* Algoritmos que juegan videojuegos y mejoran a medida que juegan miles de partidas.
+* Sistemas de recomendación que ajustan sus sugerencias según las interacciones del usuario.
+
+La idea clave es el  **aprendizaje por prueba y error** , similar a cómo los humanos aprendemos muchas habilidades.
+
+---
+
+# PASOS PARA RESOLVER PROBLEMAS CON ML
+
+Cuando queremos aplicar machine learning a un problema real, no basta con elegir un algoritmo. Debemos seguir un  **proceso estructurado** :
+
+1. **Definir el problema:** entender bien la pregunta que queremos responder.
+2. **Recolectar y preparar los datos:** conseguir datos de calidad y organizarlos correctamente.
+3. **Elegir un modelo:** seleccionar el tipo de algoritmo más adecuado.
+4. **Entrenar el modelo:** ajustar los parámetros con los datos de entrenamiento.
+5. **Evaluar el modelo:** medir su rendimiento con datos que no ha visto antes.
+6. **Ajustar y mejorar:** probar con diferentes configuraciones, más datos o técnicas de optimización.
+7. **Implementar la solución:** llevar el modelo a producción para que aporte valor en el mundo real.
+
+---
+
+## RECOLECCIÓN DE DATOS
+
+El primer paso en cualquier proyecto de ML es  **conseguir datos de calidad** .
+
+* Los datos pueden provenir de sensores, bases de datos, encuestas, imágenes, audio, texto o transacciones financieras.
+* Es importante considerar la **cantidad** (muchos datos permiten entrenar mejor) y la **calidad** (datos con errores generan modelos poco fiables).
+* Ejemplo: para predecir la probabilidad de abandono de clientes, necesitamos datos como antigüedad, uso del servicio, historial de pagos.
+
+---
+
+## PREPROCESAMIENTO DE DATOS
+
+Tareas a realizar:
+
+* **Limpieza:** eliminar duplicados, corregir errores tipográficos, manejar valores faltantes.
+* **Normalización o estandarización:** ajustar las escalas de las variables (por ejemplo, edad en años y salario en miles de euros).
+* **Codificación de variables categóricas:** convertir texto (“rojo”, “verde”, “azul”) en números que entienda el algoritmo.
+* **División en conjuntos de entrenamiento y prueba:** asegurar que podemos evaluar de forma justa el modelo.
+
+---
+`;
+
+// Auto-load on page load
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    CodelabApp.init(EMBEDDED_MARKDOWN);
+  } catch (err) {
+    showToast('Error al cargar el codelab: ' + err.message);
+    console.error(err);
+  }
+});
+
+// Init: sidebar hidden on mobile by default
+if (window.innerWidth <= 768) sidebar.classList.add('hidden');
+</script>
+</body>
+</html>
